@@ -7,6 +7,8 @@ namespace SafeVaultAlpha.Cryptography
 {
     public static class StaticHash
     {
+        public static int SHA1HashLength = 256 / 8;
+
         public static byte[] StaticSha256(byte[] input)
         {
             byte[] data;

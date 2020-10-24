@@ -9,6 +9,7 @@ using SafeVaultAlpha.Cryptography;
 using SafeVaultAlpha.Events;
 using SafeVaultAlpha.RegularExpressions;
 using SafeVaultAlpha.Types;
+using SafeVaultBetta.Types;
 
 namespace SafeVaultAlpha.Windows
 {
@@ -75,9 +76,13 @@ namespace SafeVaultAlpha.Windows
             {
                 if (ChosenForVerificationFile != null)
                 {
-                    if (ChosenForVerificationFile.Length <= 536870912)
+                    if (ChosenForVerificationFile.Length >= FileConsts.VerificationFileMaxLength)
                     {
-                        isFailure = true;
+                        if (ChosenForVerificationFile.Length <= FileConsts.MinimalFileSize)
+                        {
+                            isFailure = true;
+                        }
+                        else this.ErrorNotificationTBlock.Text = "Size must exceed "+FileConsts.MinimalFileSize+"bytes";
                     }
                     else this.ErrorNotificationTBlock.Text = "Size mustn't exceed 512 MB";
                 }
@@ -139,7 +144,8 @@ namespace SafeVaultAlpha.Windows
             User user = new User
             {
                 Username = this.UsernameInput.Text,
-                Password = bytePass
+                Password = bytePass,
+                FileMinimalLength = FileConsts.MinimalFileSize
             };
 
             return user;

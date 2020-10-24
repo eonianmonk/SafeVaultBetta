@@ -20,11 +20,19 @@
                 <Button Content="Create new vault" Margin="186,157,187,144"
                         FontSize="20" Click="CreateVaultButtonClick"/>
                 <Label Content="or" HorizontalAlignment="Center" Margin="0,232,0,0" VerticalAlignment="Top"/>
-                <Button Content="Cnange folder" HorizontalAlignment="Center" Margin="0,263,0,0" VerticalAlignment="Top" Height="27" Width="82" Click="ChangeFolder"/>
+                <Button Content="Change folder" HorizontalAlignment="Center" Margin="0,263,0,0"
+                        VerticalAlignment="Top" Height="27" Width="82" Click="ChangeFolder"/>
             </Grid>
         </Grid>
         <Grid x:Name="AnyUsersGrid">
-            <ListBox x:Name="UserListBox"/>
+            <ComboBox x:Name="UsersComboBox" SelectionChanged="onSelectionChanged" FontSize="14" Margin="243,44,136,0" VerticalAlignment="Top" Width="218"/>
+            <Label Content="Username:" FontSize="14" HorizontalAlignment="Left" Margin="112,40,0,0" VerticalAlignment="Top" Width="82"/>
+            <Label Content="Password" FontSize="14" HorizontalAlignment="Left" Margin="112,124,0,0" VerticalAlignment="Top" Width="82"/>
+            <PasswordBox x:Name="UserPassword" PasswordChanged="ManualPassInput" FontSize="14" Margin="243,138,136,0" VerticalAlignment="Top" Width="218"/>
+            <Button x:Name="ConfirmalButton" Click="Confirm" Content="Confirm" FontSize="14" HorizontalAlignment="Center" Margin="0,273,0,0" VerticalAlignment="Top" Height="39" Width="78"/>
+            <Button Content="Create new user" FontSize="14" HorizontalAlignment="Left" Margin="451,292,0,0" VerticalAlignment="Top" Width="114" Height="25" Click="CreateVaultButtonClick"/>
+            <Label Content="or" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <Button x:Name="ChooseFileButton" Content="Login using verification file" FontSize="14" HorizontalAlignment="Center" Margin="0,199,0,0" VerticalAlignment="Top" Height="35" Width="198"/>
         </Grid>
     </Grid>
 </Window>
