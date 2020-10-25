@@ -49,7 +49,7 @@ namespace SafeVaultAlpha.Windows
 
         private void ConfirmInputUserData(object sender, RoutedEventArgs e)
         {
-            bool isFailure = false;
+            bool isSuccess = false;
 
             if (Regex.IsMatch(this.UsernameInput.Text, InputRegexes.InvalidUsername))
             {
@@ -63,7 +63,7 @@ namespace SafeVaultAlpha.Windows
                     {
                         if (!File.Exists(this.UsernameInput.Text + ".dat"))
                         {
-                            isFailure = true;
+                            isSuccess = true;
                         }
                         else this.ErrorNotificationTBlock.Text = "Such user already exists";
                     }
@@ -80,7 +80,7 @@ namespace SafeVaultAlpha.Windows
                     {
                         if (ChosenForVerificationFile.Length <= FileConsts.MinimalFileSize)
                         {
-                            isFailure = true;
+                            isSuccess = true;
                         }
                         else this.ErrorNotificationTBlock.Text = "Size must exceed "+FileConsts.MinimalFileSize+"bytes";
                     }
@@ -88,7 +88,8 @@ namespace SafeVaultAlpha.Windows
                 }
                 else this.ErrorNotificationTBlock.Text = "You haven't chosen a file";
             }
-            if (!isFailure)
+
+            if (!isSuccess)
             {
                 this.NewUser(this, new UserCreatedEventArgs(this.CreateUser()));
                 this.Close();
@@ -133,7 +134,7 @@ namespace SafeVaultAlpha.Windows
             if (this.UseFileInsteadCheckBox.IsChecked == true)
             {
                 byte[] fileRead = null;
-                ChosenForVerificationFile.Read(fileRead, 0, (Int32)ChosenForVerificationFile.Length);
+                ChosenForVerificationFile.Read(fileRead, (int)ChosenForVerificationFile.Length/2, FileConsts.MinimalFileSize / 2);
                 bytePass = StaticHash.StaticSha256(fileRead);
             }
             else

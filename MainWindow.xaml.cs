@@ -1,11 +1,8 @@
 ﻿using System;
 using System.IO;
-using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using SafeVaultAlpha.Events;
 using SafeVaultAlpha.Types;
@@ -15,6 +12,8 @@ using Microsoft.Win32;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using System.Windows.Controls;
 using SafeVaultAlpha.Cryptography;
+using Newtonsoft.Json;
+using SafeVaultBetta.Windows;
 
 namespace SafeVaultAlpha
 {
@@ -47,7 +46,10 @@ namespace SafeVaultAlpha
 
         private void Confirm(object sender, RoutedEventArgs e)
         {
-            if (inputPassBytes == Users.Where(u => u.Username == ((ComboBoxItem)this.UsersComboBox.SelectedItem).Content.ToString()).First().Password)
+            var username = ((ComboBoxItem)this.UsersComboBox.SelectedItem).Content.ToString();
+            string pathString = Path.Combine(FolderUrl, username + FileConsts.Extenstion);
+
+            if (inputPassBytes == Users.Where(u => u.Username == username).First().Password)
             {
                 byte[] source = null;
                 string pass = null;
@@ -56,7 +58,9 @@ namespace SafeVaultAlpha
 
                 if (fs != null && UserPassword.Password == "")
                 {
-                    fs.Read(source, 0, FileConsts.MinimalFileSize);
+                    fs.Read(source, FileConsts.FileSign.Length + StaticHash.SHA1HashLength, 4);
+                    int minFileSize = BitConverter.ToInt32(source);
+                    fs.Read(source, (Int32)fs.Length/2 - minFileSize/2, minFileSize/ 2);
                     source.CopyTo(decryptionKey, 0);
                     source.CopyTo(decryptionKey, FileConsts.MinimalFileSize);
 
@@ -72,10 +76,28 @@ namespace SafeVaultAlpha
                     MessageBox.Show("Key input error.", "Error", MessageBoxButton.OK);
                     return;
                 }
+
                 if (decryptionKey != null)
                 {
+                    byte[] encryptedData = null;
+                    Stream fs = File.OpenRead(pathString);
 
-                    // form w data & decription
+                    int encryptedDataOffset = FileConsts.FileSign.Length + StaticHash.SHA1HashLength + 4; 
+                    fs.Read(encryptedData, encryptedDataOffset, (Int32)fs.Length - encryptedDataOffset - FileConsts.FileSign.Length);
+
+                    if (encryptedData.Length != 0)
+                    {
+                        var cipher = new MyAES256();
+                        byte[] userCreds = cipher.DecryptAes(decryptionKey, encryptedData);
+
+                        string rowData = Encoding.UTF8.GetString(userCreds);
+                        var creds = JsonConvert.DeserializeObject<List<UserCred>>(rowData);
+
+                        var nw = new CreditantialsWindow(creds);
+                        nw.Show();
+                        this.Close();
+                    }
+
                 }
             }
         }
@@ -83,11 +105,29 @@ namespace SafeVaultAlpha
         private void UserCreated(object sender, UserCreatedEventArgs e)
         {
             Users.Add(e.User);
-            
+            string pathString = Path.Combine(FolderUrl, e.User.Username + FileConsts.Extenstion);
+
             if (NoUsersGrid.Visibility == Visibility.Visible)
             {
                 this.NoUsersGrid.Visibility = Visibility.Collapsed;
                 this.AnyUsersGrid.Visibility = Visibility.Visible;
+            }
+
+            if (File.Exists(pathString))
+            {
+                MessageBox.Show("Such user already exists in selected folder!", "Error", MessageBoxButton.OK);
+                return;
+            }
+            // User creation (file)
+            else
+            {
+                using (FileStream fs = File.Create(pathString))
+                {
+                    fs.Write(FileConsts.FileSign);                               // 0x de ad be ef
+                    fs.Write(e.User.Password);                                   // 32 bytes SHA256
+                    fs.Write(BitConverter.GetBytes(FileConsts.MinimalFileSize)); // integer v possible file byte length to sign
+                    fs.Write(FileConsts.FileSign);                               // 0x de ad be ef
+                }
             }
         }
 
@@ -141,7 +181,7 @@ namespace SafeVaultAlpha
                 {
                     byte[] temp=null;
 
-                    if (file.Read(temp, 0, (int)file.Length) == 0) 
+                    if (file.Read(temp, (Int32)file.Length/2, FileConsts.MinimalFileSize/2) == 0) 
                     {
                         this.inputPassBytes = StaticHash.StaticSha256(temp);
                         this.UserPassword.Password = "";
@@ -178,7 +218,7 @@ namespace SafeVaultAlpha
             Users.Clear();
 
             this.FolderUrl = folderUrl;
-            User temp;
+            User temp = null;
             byte[] fileExtDet = null;
             int offset = FileConsts.FileSign.Length;
 
@@ -189,8 +229,18 @@ namespace SafeVaultAlpha
                 
                 if(fileExtDet == FileConsts.FileSign)
                 {
-                    temp = new User(this.fs, dir.Split('\\').Last().Split('.')[0]);
-                    Users.Add(temp);
+                    this.fs.Read(fileExtDet, (int)this.fs.Length - offset, offset);
+
+                    if (fileExtDet == FileConsts.FileSign)
+                    {
+                        temp = new User(this.fs, dir.Split('\\').Last().Split('.')[0]);
+                        Users.Add(temp);
+                    }
+                }
+
+                if(temp == null)
+                {
+                    MessageBox.Show("Malformed file.", "Error", MessageBoxButton.OK);
                 }
             }
         }
