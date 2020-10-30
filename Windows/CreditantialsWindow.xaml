@@ -6,10 +6,100 @@
         xmlns:local="clr-namespace:SafeVaultBetta.Windows"
         mc:Ignorable="d"
         Title="Your accounts" Height="610" Width="556">
+    <Window.Resources>
+        <Style TargetType="{x:Type CheckBox}" x:Key="PassVisibilityCheckbox">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type CheckBox}">
+                        <StackPanel Orientation="Horizontal">
+                            <Image x:Name="PassVisibilityImage" Source="/Resources/Pictures/VisibilityOFF.bmp" Width="20"/>
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="PassVisibilityImage" Property="Source" Value="/Resources/Pictures/VisibilityON.bmp"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="False">
+                                <Setter TargetName="PassVisibilityImage" Property="Source" Value="/Resources/Pictures/VisibilityOFF.bmp"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="{x:Type Button}" x:Key="BottomButton">
+            <Setter Property="FontSize" Value="22"/>
+            <Setter Property="Background" Value="#ebe9c7"/>
+            <Setter Property="Height" Value="34"/>
+        </Style>
+    </Window.Resources>
+
     <DockPanel LastChildFill="True">
-        <Button DockPanel.Dock="Right" Background="Beige" Content="right"/>
-        <Button DockPanel.Dock="Left" Background="Gray" Content="left" />
-        <Button DockPanel.Dock="Top" Background="Bisque" Content="top"/>
-        <Button DockPanel.Dock="Left" Background="Azure" Content="Center"/>
+        <Grid Height="35" DockPanel.Dock="Top" Background="#ffe3a5">
+            <Button Click="SettingsClick" Margin="8,1.5,516,1.5" Width="32" Height="32" 
+                    RenderTransformOrigin="1.641,0.518" ToolTip="Settings">
+                <StackPanel>
+                    <Image Source="/Resources/Pictures/SettingsTool.bmp" RenderTransformOrigin="2.304,0.522"/>
+                </StackPanel>
+            </Button>
+        </Grid>
+
+        <Grid DockPanel.Dock="Bottom" VerticalAlignment="Bottom" Height="50" Background="#d9d9d9">
+            <Border BorderBrush="Black" BorderThickness="1"/>
+            <Button x:Name="SaveButton" Style="{StaticResource BottomButton}" Margin="440,2,8,2" Click="SaveButtonClick">
+                Save
+            </Button>
+        </Grid>
+
+        <Grid DockPanel.Dock="Left" Width="48" Background="#d9d9d9">
+            <Button Click="AddUserClick" Height="32" Width="32" Margin="8,10,8,517" ToolTip="Add Cred">
+                <StackPanel>
+                    <Image Source="/Resources/Pictures/AddButton.bmp"/>
+                </StackPanel>
+            </Button>
+        </Grid>
+
+        <Grid x:Name="ContentGrid" DockPanel.Dock="Bottom">
+            <DataGrid x:Name="DataContentGrid" Width="508" AutoGenerateColumns="False"
+                  CanUserAddRows="False" Background="White" IsReadOnly="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Width="250" Binding="{Binding CredReference}"/>
+                    <!--<DataGridTextColumn Width="170" Binding="{Binding Password}"/>-->
+                    <DataGridTemplateColumn x:Name="PasswordColumn" Width="218" IsReadOnly="True">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBox x:Name="{Binding Id}" Visibility="Hidden" Text="{Binding Password}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTemplateColumn x:Name="PasswordVisibilityColumn" Width="20">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox Style="{StaticResource PassVisibilityCheckbox}" 
+                                      IsChecked="{Binding IsHidden}" Tag="{Binding Id}" Click="PasswordVisibilityChanged" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTemplateColumn Width="20" IsReadOnly="True">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Image Source="/Resources/Pictures/ExclamationMark.bmp" Height="20" Visibility="{Binding IsOutdated}" 
+                                       ToolTip="Your password is pretty old. Probably you should change it."></Image>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <Grid x:Name="NoCredsGrid" d:IsHidden="True">
+                <TextBlock FontSize="26" TextAlignment="Center" VerticalAlignment="Center"
+                    TextWrapping="Wrap">
+                    You haven't added any data yet.<LineBreak/>
+                    To add some press the <Image Source="/Resources/Pictures/AddButton.bmp" Width="32"/> button.
+                </TextBlock>
+            </Grid>
+        </Grid>
     </DockPanel>
 </Window>

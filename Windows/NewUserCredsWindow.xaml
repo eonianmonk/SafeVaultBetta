@@ -1,0 +1,16 @@
+﻿<Window x:Class="SafeVaultBetta.Windows.NewUserCredsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SafeVaultBetta.Windows"
+        mc:Ignorable="d"
+        Title="NewUserCredsWindow" Height="281" Width="406">
+    <Grid Margin="0,0,0,-6">
+        <Label Content="Creditantials:" FontSize="20" HorizontalAlignment="Left" Margin="50,40,0,0" VerticalAlignment="Top"/>
+        <Label Content="Password:" FontSize="20" Margin="57,90,239,135"/>
+        <TextBox x:Name="Credbox" HorizontalAlignment="Left" FontSize="18" Margin="190,45,0,0" Text="" TextWrapping="Wrap" VerticalAlignment="Top" Width="173"/>
+        <TextBox x:Name="Credpass" HorizontalAlignment="Left" FontSize="18" Margin="190,100,0,0" Text="" TextWrapping="Wrap" VerticalAlignment="Top" Width="165"/>
+        <Button Content="Button" Width="110" Height="44" Margin="148,181,148,46" FontSize="20" Click="Button_Click"/>
+    </Grid>
+</Window>
